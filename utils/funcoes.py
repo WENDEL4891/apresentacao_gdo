@@ -1,27 +1,56 @@
 import pandas as pd
 import numpy as np
+import os
+from pprint import pprint
+
+def get_files_path(ano, mes):
+    files_path = dict()
+    aux_path = f'files/{ano}/{mes}/dados/'
+    for file_name in os.listdir(f'files/{ano}/{mes}/dados'):
+        if 'IAF' in file_name:
+            files_path['IAF'] = os.path.abspath(aux_path + file_name)
+        elif 'TCV' in file_name:
+            files_path['TCV'] = os.path.abspath(aux_path + file_name)
+        elif 'THC' in file_name:
+            files_path['THC'] = os.path.abspath(aux_path + file_name)
+        elif 'TRI' in file_name:
+                files_path['TRI'] = os.path.abspath(aux_path + file_name)
+        elif 'OLS' in file_name:
+                files_path['OLS'] = os.path.abspath(aux_path + file_name)
+        elif 'TQF' in file_name:
+                files_path['TQF'] = os.path.abspath(aux_path + file_name)
+    return files_path
+
 
 def definir_campos(df):
+    for field_name in df.columns:
+        if 'Qtd' in field_name:
+            qtd = field_name
+        if 'Número REDS' in field_name:
+            NREDS = field_name
+    
     df = df[
         [
-            'Número REDS', 'Ano Fato', 'Mês Numérico Fato', 'Data Fato',
+            NREDS, 'Ano Fato', 'Mês Numérico Fato', 'Data Fato',
             'Município', 'Bairro', 'Logradouro Ocorrência', 'Bairro Não Cadastrado',
             'Logradouro Ocorrência Não Cadastrado', 'Complemento Endereço',
-            'Ponto de Referência', 'Qtde Ocorrências'
+            'Ponto de Referência', qtd
         ]
     ]
     df.columns = [
             'NREDS', 'ANO_FATO', 'MES_FATO', 'DATA_FATO',
             'MUNICIPIO', 'BAIRRO', 'LOGRADOURO', 'BAIRRO_NAO_CADASTRADO',
             'LOGRADOURO_NAO_CADASTRADO', 'COMPLEMENTO_ENDERECO',
-            'PONTO_DE_REFERENCIA', 'QTDE OCORRENCIAS'
+            'PONTO_DE_REFERENCIA', 'QTDE'
         ]
     return df
 
 
 def get_df_classif():
-        df_classif = pd.read_csv('files/dados/classificadores.csv')
-        df_classif.set_index( df_classif['MUNICIPIO'] + " " + df_classif['CLASSIFICADOR_TIPO'] + " " + df_classif['CLASSIFICADOR'], inplace=True)    
+        df_classif = pd.read_csv('files/classificadores.csv')
+        df_classif['MUNICIPIO'] = df_classif['MUNICIPIO'].str.upper()
+        df_classif['CLASSIFICADOR'] = df_classif['CLASSIFICADOR'].str.upper()
+        df_classif.set_index(df_classif['MUNICIPIO'] + " " + df_classif['CLASSIFICADOR_TIPO'] + " " + df_classif['CLASSIFICADOR'], inplace=True)    
         df_classif.fillna('', inplace=True)
         df_classif = df_classif[~df_classif.index.duplicated(keep='first')]        
         return df_classif
